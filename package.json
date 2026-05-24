@@ -1,0 +1,49 @@
+{
+  "name": "@openhoo/mouserhoo",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for Mouser API authentication, Search, Cart, Order, and Order History endpoints.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/openhoo/mouserhoo.git"
+  },
+  "bugs": {
+    "url": "https://github.com/openhoo/mouserhoo/issues"
+  },
+  "homepage": "https://github.com/openhoo/mouserhoo#readme",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
+  "type": "module",
+  "license": "UNLICENSED",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --sourcemap --clean",
+    "generate:types": "mkdir -p src/generated && swagger2openapi --outfile /tmp/mouser-v1-openapi.json https://api.mouser.com/api/docs/V1 && openapi-typescript /tmp/mouser-v1-openapi.json --output src/generated/mouser-v1.ts && swagger2openapi --outfile /tmp/mouser-v2-openapi.json https://api.mouser.com/api/docs/V2 && openapi-typescript /tmp/mouser-v2-openapi.json --output src/generated/mouser-v2.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm test && npm run build",
+    "prepack": "npm run build",
+    "verify": "npm run generate:types && npm run typecheck && npm test && npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "openapi-typescript": "^7.13.0",
+    "swagger2openapi": "^7.0.8",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.0"
+  }
+}
