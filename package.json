@@ -1,6 +1,6 @@
 {
   "name": "@openhoo/mouserhoo",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "TypeScript SDK for Mouser API authentication, Search, Cart, Order, and Order History endpoints.",
   "repository": {
     "type": "git",
