@@ -17,7 +17,9 @@
     {
       "matchPackageNames": ["@openhoo/hooversion"],
       "groupName": "hooversion",
-      "automerge": true
+      "dependencyDashboardApproval": false,
+      "automerge": true,
+      "automergeType": "branch"
     }
   ]
 }
