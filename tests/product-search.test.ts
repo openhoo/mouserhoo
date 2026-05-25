@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "bun:test";
 import type {
   ApiKeyProvider,
   FetchLike,
@@ -350,15 +350,16 @@ describe("ProductSearchClient", () => {
       const client = testClient(fetch);
 
       const request = client.productSearch.manufacturerList({ timeoutMs: 50 });
-      const assertion = expect(request).rejects.toMatchObject({
+      const rejection = request.catch((error: unknown) => error);
+
+      await advanceTimersByTime(50);
+      expect(await rejection).toMatchObject({
         name: "MouserNetworkError",
         message: "Mouser request timed out after 50ms.",
         isTimeout: true,
         method: "GET",
       } satisfies Partial<MouserNetworkError>);
 
-      await vi.advanceTimersByTimeAsync(50);
-      await assertion;
       expect(fetch).toHaveBeenCalledTimes(1);
     } finally {
       vi.useRealTimers();
@@ -477,6 +478,18 @@ function testClient(fetch: FetchLike): MouserClient {
     apiBaseUrl: "https://api.mouser.test",
     fetch,
   });
+}
+
+async function advanceTimersByTime(delayMs: number): Promise<void> {
+  await flushMicrotasks();
+  vi.advanceTimersByTime(delayMs);
+  await flushMicrotasks();
+}
+
+async function flushMicrotasks(): Promise<void> {
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    await Promise.resolve();
+  }
 }
 
 function jsonResponse(

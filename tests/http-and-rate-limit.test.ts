@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, setSystemTime, vi } from "bun:test";
 import type { FetchLike, SearchRateLimiter } from "../src";
 import {
   MouserApiKeyAuth,
@@ -85,6 +85,29 @@ describe("MouserHttpClient", () => {
     expect(init?.body).toBe("<Request />");
   });
 
+  it("serializes array fields in form-url-encoded request bodies", async () => {
+    const fetch = vi.fn<FetchLike>(async () => new Response("{}"));
+    const http = new MouserHttpClient({
+      apiKey: "api-key",
+      apiBaseUrl: "https://api.mouser.test",
+      fetch,
+    });
+
+    await http.request({
+      method: "POST",
+      path: "/form",
+      body: {
+        Values: ["alpha", "beta"],
+      },
+      requestOptions: {
+        contentType: "application/x-www-form-urlencoded",
+      },
+    });
+
+    const [, init] = fetch.mock.calls[0]!;
+    expect(init?.body).toBe("Values%5B0%5D=alpha&Values%5B1%5D=beta");
+  });
+
   it("wraps XML serialization configuration errors as network errors", async () => {
     const fetch = vi.fn<FetchLike>(async () => new Response("{}"));
     const http = new MouserHttpClient({
@@ -111,6 +134,17 @@ describe("MouserHttpClient", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
+  it("requires an explicit fetch implementation when global fetch is unavailable", () => {
+    withGlobalFetch(undefined, () => {
+      expect(
+        () =>
+          new MouserClient({
+            apiKey: "api-key",
+          }),
+      ).toThrow("A fetch implementation is required in this runtime.");
+    });
+  });
+
   it("rejects invalid retry options before sending requests", async () => {
     const fetch = vi.fn<FetchLike>(async () => jsonResponse({}));
     const client = new MouserClient({
@@ -135,7 +169,7 @@ describe("MouserHttpClient", () => {
 
   it("honors date-based Retry-After headers", async () => {
     vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-01-01T00:00:00Z"));
+    setSystemTime(new Date("2026-01-01T00:00:00Z"));
     try {
       const fetch = vi
         .fn<FetchLike>()
@@ -162,8 +196,8 @@ describe("MouserHttpClient", () => {
       });
 
       const request = client.productSearch.keywordSearch({ keyword: "sensor" });
-      await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
-      await vi.advanceTimersByTimeAsync(1_000);
+      await waitForExpectation(() => expect(fetch).toHaveBeenCalledTimes(1));
+      await advanceTimersByTime(1_000);
 
       await expect(request).resolves.toEqual({ SearchResults: { NumberOfResult: 0, Parts: [] } });
       expect(fetch).toHaveBeenCalledTimes(2);
@@ -194,7 +228,8 @@ describe("MouserHttpClient", () => {
         signal: controller.signal,
       },
     );
-    await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+    await waitForExpectation(() => expect(fetch).toHaveBeenCalledTimes(1));
+    await flushMicrotasks();
     controller.abort(new DOMException("caller aborted", "AbortError"));
 
     await expect(request).rejects.toMatchObject({
@@ -313,7 +348,7 @@ describe("MouserSearchRateLimiter", () => {
       const wait = limiter.waitForAvailableRequest();
       await Promise.resolve();
       now = 60_000;
-      await vi.advanceTimersByTimeAsync(60_000);
+      await advanceTimersByTime(60_000);
 
       await expect(wait).resolves.toBeUndefined();
     } finally {
@@ -329,6 +364,26 @@ describe("MouserSearchRateLimiter", () => {
     await expect(
       limiter.waitForAvailableRequest({ signal: controller.signal }),
     ).rejects.toMatchObject({
+      name: "AbortError",
+    });
+  });
+
+  it("rejects in-flight rate-limit waits when the caller aborts", async () => {
+    const controller = new AbortController();
+    let now = 0;
+    const limiter = new MouserSearchRateLimiter({
+      requestsPerMinute: 1,
+      requestsPerDay: 1000,
+      now: () => now,
+    });
+
+    await limiter.waitForAvailableRequest();
+    const wait = limiter.waitForAvailableRequest({ signal: controller.signal });
+    await flushMicrotasks();
+    controller.abort(new DOMException("caller aborted", "AbortError"));
+    now = 60_000;
+
+    await expect(wait).rejects.toMatchObject({
       name: "AbortError",
     });
   });
@@ -368,4 +423,51 @@ function jsonResponse(
       ...headers,
     },
   });
+}
+
+async function advanceTimersByTime(delayMs: number): Promise<void> {
+  await flushMicrotasks();
+  vi.advanceTimersByTime(delayMs);
+  await flushMicrotasks();
+}
+
+async function flushMicrotasks(): Promise<void> {
+  for (let attempt = 0; attempt < 10; attempt += 1) {
+    await Promise.resolve();
+  }
+}
+
+async function waitForExpectation(assertion: () => void): Promise<void> {
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    try {
+      assertion();
+      return;
+    } catch (error) {
+      lastError = error;
+      await Promise.resolve();
+    }
+  }
+
+  throw lastError;
+}
+
+function withGlobalFetch(fetch: typeof globalThis.fetch | undefined, run: () => void): void {
+  const originalFetch = globalThis.fetch;
+  Object.defineProperty(globalThis, "fetch", {
+    configurable: true,
+    writable: true,
+    value: fetch,
+  });
+
+  try {
+    run();
+  } finally {
+    Object.defineProperty(globalThis, "fetch", {
+      configurable: true,
+      writable: true,
+      value: originalFetch,
+    });
+  }
 }
