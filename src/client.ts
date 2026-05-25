@@ -1,9 +1,9 @@
-import { MouserHttpClient } from "./http";
 import { CartClient } from "./cart";
+import { MouserHttpClient } from "./http";
 import { OrderClient } from "./order";
 import { OrderHistoryClient } from "./order-history";
 import { ProductSearchClient } from "./product-search";
-import { resolveSearchRateLimiter, type MouserSearchRateLimiterInput } from "./rate-limit";
+import { type MouserSearchRateLimiterInput, resolveSearchRateLimiter } from "./rate-limit";
 import type {
   ApiKeyProvider,
   FetchLike,
@@ -11,7 +11,7 @@ import type {
   MouserResponseContentType,
   MouserResponseType,
   MouserRetryOptions,
-  ResponseHook
+  ResponseHook,
 } from "./types";
 
 export interface MouserClientOptions {
@@ -48,7 +48,7 @@ export class MouserClient {
       retry: options.retry,
       contentType: options.contentType,
       accept: options.accept,
-      responseType: options.responseType
+      responseType: options.responseType,
     });
     const searchRateLimiter = resolveSearchRateLimiter(options.searchRateLimiter ?? {});
 

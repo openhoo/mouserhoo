@@ -14,13 +14,15 @@ export function resolveRequestSignal(options: RequestSignalOptions = {}): Resolv
   if (options.timeoutMs === undefined) {
     return {
       signal: options.signal,
-      cleanup: noop
+      cleanup: noop,
     };
   }
 
   const controller = new AbortController();
   const timeout = setTimeout(() => {
-    controller.abort(new DOMException(`Mouser request timed out after ${options.timeoutMs}ms.`, "TimeoutError"));
+    controller.abort(
+      new DOMException(`Mouser request timed out after ${options.timeoutMs}ms.`, "TimeoutError"),
+    );
   }, options.timeoutMs);
 
   const abortFromCaller = (): void => {
@@ -38,7 +40,7 @@ export function resolveRequestSignal(options: RequestSignalOptions = {}): Resolv
     cleanup: () => {
       clearTimeout(timeout);
       options.signal?.removeEventListener("abort", abortFromCaller);
-    }
+    },
   };
 }
 

@@ -26,7 +26,7 @@ export function responseMetadata(options: {
     status: options.response.status,
     statusText: options.response.statusText,
     headers: options.response.headers,
-    rateLimit: parseRateLimitHeaders(options.response.headers)
+    rateLimit: parseRateLimitHeaders(options.response.headers),
   };
 }
 
@@ -36,7 +36,7 @@ export function parseRateLimitHeaders(headers: Headers): MouserRateLimit {
     remaining: parseOptionalNumber(headers.get("X-RateLimit-Remaining")),
     reset: parseOptionalNumber(headers.get("X-RateLimit-Reset")),
     resetTime: parseOptionalString(headers.get("X-RateLimit-ResetTime")),
-    retryAfter: parseOptionalNumber(headers.get("Retry-After"))
+    retryAfter: parseOptionalNumber(headers.get("Retry-After")),
   };
 }
 

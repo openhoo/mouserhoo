@@ -1,10 +1,21 @@
 import { SEARCH_V1_BASE_PATH, SEARCH_V2_BASE_PATH } from "./constants";
-import type { HttpRequestOptions, MouserHttpClient } from "./http";
 import type { components as V1Components, operations as V1Operations } from "./generated/mouser-v1";
 import type { components as V2Components, operations as V2Operations } from "./generated/mouser-v2";
+import type { HttpRequestOptions, MouserHttpClient } from "./http";
 import type { SearchRateLimiter } from "./rate-limit";
-import type { JsonResponse, LooseMouserObject, MouserRequestOptions, MouserResponseBody } from "./types";
-import { integerInRange, nonNegativeInteger, oneOf, positiveInteger, requiredString } from "./validation";
+import type {
+  JsonResponse,
+  LooseMouserObject,
+  MouserRequestOptions,
+  MouserResponseBody,
+} from "./types";
+import {
+  integerInRange,
+  nonNegativeInteger,
+  oneOf,
+  positiveInteger,
+  requiredString,
+} from "./validation";
 
 export type SearchV1Schemas = V1Components["schemas"];
 export type SearchV2Schemas = V2Components["schemas"];
@@ -39,7 +50,7 @@ const KEYWORD_SEARCH_OPTIONS = [
   1,
   2,
   4,
-  8
+  8,
 ] as const;
 const PART_SEARCH_OPTIONS = ["None", "Exact", "1", "2", 1, 2] as const;
 
@@ -48,10 +59,16 @@ export type SearchResponse = SearchV1Schemas["SearchResponse"];
 export type SearchResponseRoot = SearchV1Schemas["SearchResponseRoot"];
 export type ErrorEntity = SearchV1Schemas["ErrorEntity"];
 
-export type KeywordSearchRequest = Omit<SearchV1Schemas["SearchByKeywordRequest"], "searchOptions"> & {
+export type KeywordSearchRequest = Omit<
+  SearchV1Schemas["SearchByKeywordRequest"],
+  "searchOptions"
+> & {
   searchOptions?: MouserKeywordSearchOption;
 };
-export type PartNumberSearchRequest = Omit<SearchV1Schemas["SearchByPartRequest"], "partSearchOptions"> & {
+export type PartNumberSearchRequest = Omit<
+  SearchV1Schemas["SearchByPartRequest"],
+  "partSearchOptions"
+> & {
   partSearchOptions?: MouserPartSearchOption;
 };
 export type KeywordAndManufacturerSearchRequest = Omit<
@@ -82,19 +99,27 @@ export type LegacyPartNumberAndManufacturerSearchRequest = Omit<
 };
 
 export type KeywordSearchResponse = JsonResponse<SearchV1Operations["SearchApi_SearchByKeyword"]>;
-export type PartNumberSearchResponse = JsonResponse<SearchV1Operations["SearchApi_SearchByPartNumber"]>;
+export type PartNumberSearchResponse = JsonResponse<
+  SearchV1Operations["SearchApi_SearchByPartNumber"]
+>;
 export type ProductDetailsResponse = PartNumberSearchResponse;
 /** @deprecated Mouser marks the v1 manufacturer-ID method as deprecated. Use KeywordAndManufacturerSearchResponse instead. */
-export type LegacyKeywordAndManufacturerSearchResponse = LooseMouserObject<Partial<SearchResponseRoot>>;
+export type LegacyKeywordAndManufacturerSearchResponse = LooseMouserObject<
+  Partial<SearchResponseRoot>
+>;
 /** @deprecated Mouser marks the v1 manufacturer-ID method as deprecated. Use PartNumberAndManufacturerSearchResponse instead. */
-export type LegacyPartNumberAndManufacturerSearchResponse = LooseMouserObject<Partial<SearchResponseRoot>>;
+export type LegacyPartNumberAndManufacturerSearchResponse = LooseMouserObject<
+  Partial<SearchResponseRoot>
+>;
 export type KeywordAndManufacturerSearchResponse = JsonResponse<
   SearchV2Operations["SearchApi_LwSearchByKeywordAndManufacturer"]
 >;
 export type PartNumberAndManufacturerSearchResponse = JsonResponse<
   SearchV2Operations["SearchApi_LwSearchByPartNumberAndManufacturer"]
 >;
-export type ManufacturerListResponse = JsonResponse<SearchV2Operations["SearchApi_GetLwManufacturerList"]>;
+export type ManufacturerListResponse = JsonResponse<
+  SearchV2Operations["SearchApi_GetLwManufacturerList"]
+>;
 export interface LegacyManufacturer {
   ManufacturerId?: number;
   ManufacturerName?: string;
@@ -116,12 +141,12 @@ export type ProductDetailsOptions = MouserRequestOptions &
 export class ProductSearchClient {
   constructor(
     private readonly http: MouserHttpClient,
-    private readonly rateLimiter?: SearchRateLimiter
+    private readonly rateLimiter?: SearchRateLimiter,
   ) {}
 
   keywordSearch<TOptions extends SearchRequestOptions | undefined = undefined>(
     request: KeywordSearchRequest,
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, KeywordSearchResponse>> {
     validateKeywordSearchRequest(request);
 
@@ -129,16 +154,16 @@ export class ProductSearchClient {
       method: "POST",
       path: `${SEARCH_V1_BASE_PATH}/keyword`,
       body: {
-        SearchByKeywordRequest: request
+        SearchByKeywordRequest: request,
       },
       xmlRootName: "SearchByKeywordRequestRoot",
-      requestOptions: options
+      requestOptions: options,
     });
   }
 
   partNumberSearch<TOptions extends SearchRequestOptions | undefined = undefined>(
     request: PartNumberSearchRequest,
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, PartNumberSearchResponse>> {
     validatePartNumberSearchRequest(request);
 
@@ -146,16 +171,16 @@ export class ProductSearchClient {
       method: "POST",
       path: `${SEARCH_V1_BASE_PATH}/partnumber`,
       body: {
-        SearchByPartRequest: request
+        SearchByPartRequest: request,
       },
       xmlRootName: "SearchByPartRequestRoot",
-      requestOptions: options
+      requestOptions: options,
     });
   }
 
   productDetails<TOptions extends ProductDetailsOptions | undefined = undefined>(
     mouserPartNumber: string,
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, ProductDetailsResponse>> {
     validatePartNumberList(mouserPartNumber, "mouserPartNumber");
     const partSearchOptions = options?.partSearchOptions ?? "Exact";
@@ -167,18 +192,18 @@ export class ProductSearchClient {
         SearchByPartRequest: {
           mouserPartNumber,
           partSearchOptions,
-          mouserPaysCustomsAndDuties: options?.mouserPaysCustomsAndDuties
-        }
+          mouserPaysCustomsAndDuties: options?.mouserPaysCustomsAndDuties,
+        },
       },
       xmlRootName: "SearchByPartRequestRoot",
-      requestOptions: options
+      requestOptions: options,
     });
   }
 
   /** @deprecated Mouser marks this v1 endpoint as deprecated. Use keywordAndManufacturerSearch instead. */
   keywordAndManufacturerSearchById<TOptions extends SearchRequestOptions | undefined = undefined>(
     request: LegacyKeywordAndManufacturerSearchRequest,
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, LegacyKeywordAndManufacturerSearchResponse>> {
     validateKeywordSearchRequest(request);
 
@@ -186,16 +211,16 @@ export class ProductSearchClient {
       method: "POST",
       path: `${SEARCH_V1_BASE_PATH}/keywordandmanufacturer`,
       body: {
-        SearchByKeywordMfrRequest: request
+        SearchByKeywordMfrRequest: request,
       },
       xmlRootName: "SearchByKeywordMfrRequestRoot",
-      requestOptions: options
+      requestOptions: options,
     });
   }
 
   keywordAndManufacturerSearch<TOptions extends SearchRequestOptions | undefined = undefined>(
     request: KeywordAndManufacturerSearchRequest,
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, KeywordAndManufacturerSearchResponse>> {
     validateKeywordSearchRequest(request);
 
@@ -203,16 +228,16 @@ export class ProductSearchClient {
       method: "POST",
       path: `${SEARCH_V2_BASE_PATH}/keywordandmanufacturer`,
       body: {
-        SearchByKeywordMfrNameRequest: request
+        SearchByKeywordMfrNameRequest: request,
       },
       xmlRootName: "SearchByKeywordMfrNameRequestRoot",
-      requestOptions: options
+      requestOptions: options,
     });
   }
 
   partNumberAndManufacturerSearch<TOptions extends SearchRequestOptions | undefined = undefined>(
     request: PartNumberAndManufacturerSearchRequest,
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, PartNumberAndManufacturerSearchResponse>> {
     validatePartNumberSearchRequest(request);
 
@@ -220,61 +245,65 @@ export class ProductSearchClient {
       method: "POST",
       path: `${SEARCH_V2_BASE_PATH}/partnumberandmanufacturer`,
       body: {
-        SearchByPartMfrNameRequest: request
+        SearchByPartMfrNameRequest: request,
       },
       xmlRootName: "SearchByPartMfrNameRequestRoot",
-      requestOptions: options
+      requestOptions: options,
     });
   }
 
   /** @deprecated Mouser marks this v1 endpoint as deprecated. Use partNumberAndManufacturerSearch instead. */
-  partNumberAndManufacturerSearchById<TOptions extends SearchRequestOptions | undefined = undefined>(
+  partNumberAndManufacturerSearchById<
+    TOptions extends SearchRequestOptions | undefined = undefined,
+  >(
     request: LegacyPartNumberAndManufacturerSearchRequest,
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, LegacyPartNumberAndManufacturerSearchResponse>> {
     validatePartNumberSearchRequest(request);
 
-    return this.request<MouserResponseBody<TOptions, LegacyPartNumberAndManufacturerSearchResponse>>({
+    return this.request<
+      MouserResponseBody<TOptions, LegacyPartNumberAndManufacturerSearchResponse>
+    >({
       method: "POST",
       path: `${SEARCH_V1_BASE_PATH}/partnumberandmanufacturer`,
       body: {
-        SearchByPartMfrRequest: request
+        SearchByPartMfrRequest: request,
       },
       xmlRootName: "SearchByPartMfrRequestRoot",
-      requestOptions: options
+      requestOptions: options,
     });
   }
 
   /** @deprecated Mouser marks this v1 endpoint as deprecated. Use manufacturerList instead. */
   manufacturerListById<TOptions extends SearchRequestOptions | undefined = undefined>(
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, LegacyManufacturerListResponse>> {
     return this.request<MouserResponseBody<TOptions, LegacyManufacturerListResponse>>({
       method: "GET",
       path: `${SEARCH_V1_BASE_PATH}/manufacturerlist`,
-      requestOptions: options
+      requestOptions: options,
     });
   }
 
   manufacturerList<TOptions extends SearchRequestOptions | undefined = undefined>(
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, ManufacturerListResponse>> {
     return this.request<MouserResponseBody<TOptions, ManufacturerListResponse>>({
       method: "GET",
       path: `${SEARCH_V2_BASE_PATH}/manufacturerlist`,
-      requestOptions: options
+      requestOptions: options,
     });
   }
 
   manufacturers<TOptions extends SearchRequestOptions | undefined = undefined>(
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, ManufacturerListResponse>> {
     return this.manufacturerList(options);
   }
 
   private async request<T>(options: HttpRequestOptions): Promise<T> {
     await this.rateLimiter?.waitForAvailableRequest({
-      signal: options.requestOptions?.signal
+      signal: options.requestOptions?.signal,
     });
 
     return this.http.request<T>(options);
@@ -282,7 +311,10 @@ export class ProductSearchClient {
 }
 
 function validateKeywordSearchRequest(
-  request: KeywordSearchRequest | KeywordAndManufacturerSearchRequest | LegacyKeywordAndManufacturerSearchRequest
+  request:
+    | KeywordSearchRequest
+    | KeywordAndManufacturerSearchRequest
+    | LegacyKeywordAndManufacturerSearchRequest,
 ): void {
   requiredString(request.keyword, "keyword");
   oneOf(request.searchOptions, "searchOptions", KEYWORD_SEARCH_OPTIONS);
@@ -304,7 +336,7 @@ function validatePartNumberSearchRequest(
   request:
     | PartNumberSearchRequest
     | PartNumberAndManufacturerSearchRequest
-    | LegacyPartNumberAndManufacturerSearchRequest
+    | LegacyPartNumberAndManufacturerSearchRequest,
 ): void {
   requiredString(request.mouserPartNumber, "mouserPartNumber");
   validatePartNumberList(request.mouserPartNumber, "mouserPartNumber");
@@ -316,7 +348,9 @@ function validatePartNumberList(value: string | undefined, name: string): void {
 
   const parts = value.split("|");
   if (parts.length > 10) {
-    throw new RangeError(`${name} may include at most 10 part numbers separated by pipe characters.`);
+    throw new RangeError(
+      `${name} may include at most 10 part numbers separated by pipe characters.`,
+    );
   }
 
   for (const part of parts) {

@@ -1,6 +1,6 @@
 import { ORDER_HISTORY_BASE_PATH } from "./constants";
-import type { MouserHttpClient } from "./http";
 import type { components, operations } from "./generated/mouser-v1";
+import type { MouserHttpClient } from "./http";
 import type { JsonResponse, MouserRequestOptions, MouserResponseBody } from "./types";
 import { oneOf, positiveInteger, requiredString } from "./validation";
 
@@ -16,7 +16,9 @@ export type OrderHistoryOperations = Pick<
 export type OrderHistoryDateFilter =
   operations["MouserOrderHistory_OrderHistory"]["parameters"]["query"]["dateFilter"];
 export type OrderHistoryResponse = JsonResponse<operations["MouserOrderHistory_OrderHistory"]>;
-export type OrderHistoryDetailResponse = JsonResponse<operations["MouserOrderHistory_GetOrderAsync"]>;
+export type OrderHistoryDetailResponse = JsonResponse<
+  operations["MouserOrderHistory_GetOrderAsync"]
+>;
 
 const ORDER_HISTORY_DATE_FILTERS = [
   "None",
@@ -31,7 +33,7 @@ const ORDER_HISTORY_DATE_FILTERS = [
   "LastQuarter",
   "ThisYear",
   "LastYear",
-  "YearToDate"
+  "YearToDate",
 ] as const;
 
 export class OrderHistoryClient {
@@ -39,7 +41,7 @@ export class OrderHistoryClient {
 
   byDateFilter<TOptions extends MouserRequestOptions | undefined = undefined>(
     dateFilter: OrderHistoryDateFilter,
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, OrderHistoryResponse>> {
     requiredString(dateFilter, "dateFilter");
     oneOf(dateFilter, "dateFilter", ORDER_HISTORY_DATE_FILTERS);
@@ -48,16 +50,16 @@ export class OrderHistoryClient {
       method: "GET",
       path: `${ORDER_HISTORY_BASE_PATH}/ByDateFilter`,
       query: {
-        dateFilter
+        dateFilter,
       },
-      requestOptions: options
+      requestOptions: options,
     });
   }
 
   byDateRange<TOptions extends MouserRequestOptions | undefined = undefined>(
     startDate: string,
     endDate: string,
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, OrderHistoryResponse>> {
     validateMouserDate(startDate, "startDate");
     validateMouserDate(endDate, "endDate");
@@ -67,15 +69,15 @@ export class OrderHistoryClient {
       path: `${ORDER_HISTORY_BASE_PATH}/ByDateRange`,
       query: {
         startDate,
-        endDate
+        endDate,
       },
-      requestOptions: options
+      requestOptions: options,
     });
   }
 
   salesOrderNumber<TOptions extends MouserRequestOptions | undefined = undefined>(
     salesOrderNumber: string,
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, OrderHistoryDetailResponse>> {
     requiredString(salesOrderNumber, "salesOrderNumber");
 
@@ -83,15 +85,15 @@ export class OrderHistoryClient {
       method: "GET",
       path: `${ORDER_HISTORY_BASE_PATH}/salesOrderNumber`,
       query: {
-        salesOrderNumber
+        salesOrderNumber,
       },
-      requestOptions: options
+      requestOptions: options,
     });
   }
 
   webOrderNumber<TOptions extends MouserRequestOptions | undefined = undefined>(
     webOrderNumber: number,
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, OrderHistoryDetailResponse>> {
     positiveInteger(webOrderNumber, "webOrderNumber");
 
@@ -99,9 +101,9 @@ export class OrderHistoryClient {
       method: "GET",
       path: `${ORDER_HISTORY_BASE_PATH}/webOrderNumber`,
       query: {
-        webOrderNumber
+        webOrderNumber,
       },
-      requestOptions: options
+      requestOptions: options,
     });
   }
 }

@@ -13,7 +13,7 @@ export function optionalString(value: string | undefined, name: string): void {
 export function stringLength(
   value: string | undefined,
   name: string,
-  options: { min?: number; max?: number }
+  options: { min?: number; max?: number },
 ): void {
   if (value === undefined) {
     return;
@@ -69,7 +69,7 @@ export function optionalBoolean(value: boolean | undefined, name: string): void 
 export function oneOf<T extends string | number>(
   value: T | undefined,
   name: string,
-  allowedValues: readonly T[]
+  allowedValues: readonly T[],
 ): void {
   if (value !== undefined && !allowedValues.includes(value)) {
     throw new RangeError(`${name} must be one of: ${allowedValues.join(", ")}.`);

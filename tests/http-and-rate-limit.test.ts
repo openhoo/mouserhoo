@@ -1,14 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
+import type { FetchLike, SearchRateLimiter } from "../src";
 import {
   MouserApiKeyAuth,
   MouserClient,
-  MouserNetworkError,
+  type MouserNetworkError,
   MouserSearchRateLimiter,
   parseRateLimitHeaders,
-  resolveSearchRateLimiter
+  resolveSearchRateLimiter,
 } from "../src";
 import { MouserHttpClient } from "../src/http";
-import type { FetchLike, SearchRateLimiter } from "../src";
 
 describe("MouserApiKeyAuth", () => {
   it("accepts object options and rejects empty API keys", () => {
@@ -21,17 +21,18 @@ describe("MouserApiKeyAuth", () => {
 
 describe("MouserHttpClient", () => {
   it("serializes XML request bodies and returns text responses", async () => {
-    const fetch = vi.fn<FetchLike>(async () =>
-      new Response("<Response />", {
-        headers: {
-          "Content-Type": "application/xml"
-        }
-      })
+    const fetch = vi.fn<FetchLike>(
+      async () =>
+        new Response("<Response />", {
+          headers: {
+            "Content-Type": "application/xml",
+          },
+        }),
     );
     const http = new MouserHttpClient({
       apiKey: "api-key",
       apiBaseUrl: "https://api.mouser.test",
-      fetch
+      fetch,
     });
 
     await expect(
@@ -41,14 +42,14 @@ describe("MouserHttpClient", () => {
         body: {
           Value: `<"&'>`,
           Empty: null,
-          Items: [1, 2]
+          Items: [1, 2],
         },
         xmlRootName: "Request",
         requestOptions: {
           contentType: "application/xml",
-          responseType: "text"
-        }
-      })
+          responseType: "text",
+        },
+      }),
     ).resolves.toBe("<Response />");
 
     const [, init] = fetch.mock.calls[0]!;
@@ -58,8 +59,8 @@ describe("MouserHttpClient", () => {
         "<Value>&lt;&quot;&amp;&apos;&gt;</Value>",
         "<Empty />",
         "<Items><Items>1</Items><Items>2</Items></Items>",
-        "</Request>"
-      ].join("")
+        "</Request>",
+      ].join(""),
     );
   });
 
@@ -68,7 +69,7 @@ describe("MouserHttpClient", () => {
     const http = new MouserHttpClient({
       apiKey: "api-key",
       apiBaseUrl: "https://api.mouser.test",
-      fetch
+      fetch,
     });
 
     await http.request({
@@ -76,8 +77,8 @@ describe("MouserHttpClient", () => {
       path: "/xml",
       body: "<Request />",
       requestOptions: {
-        contentType: "application/xml"
-      }
+        contentType: "application/xml",
+      },
     });
 
     const [, init] = fetch.mock.calls[0]!;
@@ -89,7 +90,7 @@ describe("MouserHttpClient", () => {
     const http = new MouserHttpClient({
       apiKey: "api-key",
       apiBaseUrl: "https://api.mouser.test",
-      fetch
+      fetch,
     });
 
     await expect(
@@ -98,14 +99,14 @@ describe("MouserHttpClient", () => {
         path: "/xml",
         body: { Value: "x" },
         requestOptions: {
-          contentType: "application/xml"
-        }
-      })
+          contentType: "application/xml",
+        },
+      }),
     ).rejects.toMatchObject({
       name: "MouserNetworkError",
       cause: expect.objectContaining({
-        message: "xmlRootName is required when sending XML requests."
-      })
+        message: "xmlRootName is required when sending XML requests.",
+      }),
     } satisfies Partial<MouserNetworkError>);
     expect(fetch).not.toHaveBeenCalled();
   });
@@ -116,7 +117,7 @@ describe("MouserHttpClient", () => {
       apiKey: "api-key",
       apiBaseUrl: "https://api.mouser.test",
       fetch,
-      searchRateLimiter: false
+      searchRateLimiter: false,
     });
 
     await expect(
@@ -124,10 +125,10 @@ describe("MouserHttpClient", () => {
         { keyword: "sensor" },
         {
           retry: {
-            retries: -1
-          }
-        }
-      )
+            retries: -1,
+          },
+        },
+      ),
     ).rejects.toThrow("retry.retries must be a non-negative integer.");
     expect(fetch).not.toHaveBeenCalled();
   });
@@ -139,9 +140,14 @@ describe("MouserHttpClient", () => {
       const fetch = vi
         .fn<FetchLike>()
         .mockResolvedValueOnce(
-          jsonResponse({ Errors: [{ Message: "Service unavailable" }] }, 503, "Service Unavailable", {
-            "Retry-After": new Date(Date.now() + 1_000).toUTCString()
-          })
+          jsonResponse(
+            { Errors: [{ Message: "Service unavailable" }] },
+            503,
+            "Service Unavailable",
+            {
+              "Retry-After": new Date(Date.now() + 1_000).toUTCString(),
+            },
+          ),
         )
         .mockResolvedValueOnce(jsonResponse({ SearchResults: { NumberOfResult: 0, Parts: [] } }));
       const client = new MouserClient({
@@ -150,9 +156,9 @@ describe("MouserHttpClient", () => {
         fetch,
         retry: {
           retries: 1,
-          baseDelayMs: 10_000
+          baseDelayMs: 10_000,
         },
-        searchRateLimiter: false
+        searchRateLimiter: false,
       });
 
       const request = client.productSearch.keywordSearch({ keyword: "sensor" });
@@ -169,7 +175,7 @@ describe("MouserHttpClient", () => {
   it("wraps caller aborts while waiting to retry", async () => {
     const controller = new AbortController();
     const fetch = vi.fn<FetchLike>(async () =>
-      jsonResponse({ Errors: [{ Message: "Service unavailable" }] }, 503, "Service Unavailable")
+      jsonResponse({ Errors: [{ Message: "Service unavailable" }] }, 503, "Service Unavailable"),
     );
     const client = new MouserClient({
       apiKey: "api-key",
@@ -177,16 +183,16 @@ describe("MouserHttpClient", () => {
       fetch,
       retry: {
         retries: 1,
-        baseDelayMs: 10_000
+        baseDelayMs: 10_000,
       },
-      searchRateLimiter: false
+      searchRateLimiter: false,
     });
 
     const request = client.productSearch.keywordSearch(
       { keyword: "sensor" },
       {
-        signal: controller.signal
-      }
+        signal: controller.signal,
+      },
     );
     await vi.waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
     controller.abort(new DOMException("caller aborted", "AbortError"));
@@ -194,7 +200,7 @@ describe("MouserHttpClient", () => {
     await expect(request).rejects.toMatchObject({
       name: "MouserNetworkError",
       isAbort: true,
-      method: "POST"
+      method: "POST",
     } satisfies Partial<MouserNetworkError>);
     expect(fetch).toHaveBeenCalledTimes(1);
   });
@@ -205,11 +211,11 @@ describe("MouserHttpClient", () => {
       apiKey: "api-key",
       apiBaseUrl: "https://api.mouser.test",
       fetch,
-      searchRateLimiter: false
+      searchRateLimiter: false,
     });
 
     await expect(client.cart.getCart("cart-key", { timeoutMs: Number.NaN })).rejects.toThrow(
-      "timeoutMs must be a non-negative finite number."
+      "timeoutMs must be a non-negative finite number.",
     );
     expect(fetch).not.toHaveBeenCalled();
   });
@@ -224,18 +230,18 @@ describe("MouserHttpClient", () => {
       apiKey: "api-key",
       apiBaseUrl: "https://api.mouser.test",
       fetch,
-      searchRateLimiter: false
+      searchRateLimiter: false,
     });
 
     await expect(
       client.cart.getCart("cart-key", {
         signal: controller.signal,
-        timeoutMs: 1_000
-      })
+        timeoutMs: 1_000,
+      }),
     ).rejects.toMatchObject({
       name: "MouserNetworkError",
       isAbort: true,
-      method: "GET"
+      method: "GET",
     } satisfies Partial<MouserNetworkError>);
     expect(fetch).toHaveBeenCalledTimes(1);
   });
@@ -248,7 +254,7 @@ describe("MouserHttpClient", () => {
       apiKey: "api-key",
       apiBaseUrl: "https://api.mouser.test",
       fetch,
-      searchRateLimiter: false
+      searchRateLimiter: false,
     });
 
     await expect(client.cart.getCart("cart-key")).rejects.toMatchObject({
@@ -256,7 +262,7 @@ describe("MouserHttpClient", () => {
       message: "Mouser request failed before receiving a response.",
       method: "GET",
       isTimeout: false,
-      isAbort: false
+      isAbort: false,
     } satisfies Partial<MouserNetworkError>);
   });
 });
@@ -264,13 +270,13 @@ describe("MouserHttpClient", () => {
 describe("MouserSearchRateLimiter", () => {
   it("resolves disabled and custom rate limiters", () => {
     const custom = {
-      waitForAvailableRequest: vi.fn()
+      waitForAvailableRequest: vi.fn(),
     } satisfies SearchRateLimiter;
 
     expect(resolveSearchRateLimiter(false)).toBeUndefined();
     expect(resolveSearchRateLimiter(custom)).toBe(custom);
     expect(() => new MouserSearchRateLimiter({ requestsPerMinute: 0 })).toThrow(
-      "requestsPerMinute must be a positive integer."
+      "requestsPerMinute must be a positive integer.",
     );
   });
 
@@ -284,7 +290,7 @@ describe("MouserSearchRateLimiter", () => {
       sleep: async (delayMs) => {
         waits.push(delayMs);
         now += delayMs;
-      }
+      },
     });
 
     await limiter.waitForAvailableRequest();
@@ -300,7 +306,7 @@ describe("MouserSearchRateLimiter", () => {
       const limiter = new MouserSearchRateLimiter({
         requestsPerMinute: 1,
         requestsPerDay: 1000,
-        now: () => now
+        now: () => now,
       });
 
       await limiter.waitForAvailableRequest();
@@ -320,8 +326,10 @@ describe("MouserSearchRateLimiter", () => {
     const limiter = new MouserSearchRateLimiter();
     controller.abort(new DOMException("caller aborted", "AbortError"));
 
-    await expect(limiter.waitForAvailableRequest({ signal: controller.signal })).rejects.toMatchObject({
-      name: "AbortError"
+    await expect(
+      limiter.waitForAvailableRequest({ signal: controller.signal }),
+    ).rejects.toMatchObject({
+      name: "AbortError",
     });
   });
 });
@@ -333,15 +341,15 @@ describe("parseRateLimitHeaders", () => {
         new Headers({
           "X-RateLimit-Limit": "not-a-number",
           "X-RateLimit-Remaining": "",
-          "X-RateLimit-ResetTime": "  "
-        })
-      )
+          "X-RateLimit-ResetTime": "  ",
+        }),
+      ),
     ).toEqual({
       limit: undefined,
       remaining: undefined,
       reset: undefined,
       resetTime: undefined,
-      retryAfter: undefined
+      retryAfter: undefined,
     });
   });
 });
@@ -350,14 +358,14 @@ function jsonResponse(
   body: unknown,
   status = 200,
   statusText = "OK",
-  headers: HeadersInit = {}
+  headers: HeadersInit = {},
 ): Response {
   return new Response(JSON.stringify(body), {
     status,
     statusText,
     headers: {
       "Content-Type": "application/json",
-      ...headers
-    }
+      ...headers,
+    },
   });
 }

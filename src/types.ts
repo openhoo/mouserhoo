@@ -2,10 +2,7 @@ import type { MouserResponseMetadata } from "./response-metadata";
 
 export type MaybePromise<T> = T | Promise<T>;
 
-export type FetchLike = (
-  input: string | URL | Request,
-  init?: RequestInit
-) => Promise<Response>;
+export type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
 
 export interface ApiKeyRequestContext {
   signal?: AbortSignal;
@@ -32,7 +29,11 @@ export type MouserRequestContentType =
   | "text/xml"
   | "application/x-www-form-urlencoded";
 
-export type MouserResponseContentType = "application/json" | "text/json" | "application/xml" | "text/xml";
+export type MouserResponseContentType =
+  | "application/json"
+  | "text/json"
+  | "application/xml"
+  | "text/xml";
 export type MouserResponseType = "auto" | "json" | "text";
 
 export interface MouserRequestOptions {

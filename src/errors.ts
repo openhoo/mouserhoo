@@ -1,4 +1,4 @@
-import { parseRateLimitHeaders, type MouserRateLimit } from "./response-metadata";
+import { type MouserRateLimit, parseRateLimitHeaders } from "./response-metadata";
 
 export interface MouserApiErrorOptions {
   message: string;
@@ -70,11 +70,7 @@ export class MouserConfigurationError extends Error {
   }
 }
 
-export function apiErrorMessage(
-  status: number,
-  statusText: string,
-  details: unknown
-): string {
+export function apiErrorMessage(status: number, statusText: string, details: unknown): string {
   const detail =
     firstMouserErrorMessage(details) ??
     readStringProperty(details, "ErrorMessage") ??
@@ -82,7 +78,9 @@ export function apiErrorMessage(
     readStringProperty(details, "detail") ??
     readStringProperty(details, "title");
 
-  return detail ? `Mouser API error ${status}: ${detail}` : `Mouser API error ${status}: ${statusText}`;
+  return detail
+    ? `Mouser API error ${status}: ${detail}`
+    : `Mouser API error ${status}: ${statusText}`;
 }
 
 function firstMouserErrorMessage(value: unknown): string | undefined {

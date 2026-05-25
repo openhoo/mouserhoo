@@ -1,8 +1,20 @@
 import { CART_BASE_PATH, ORDER_BASE_PATH } from "./constants";
-import { splitRequestOptions, type MouserHttpClient, type QueryParameters } from "./http";
 import type { components, operations } from "./generated/mouser-v1";
-import type { JsonResponse, LooseMouserObject, MouserRequestOptions, MouserResponseBody } from "./types";
-import { oneOf, optionalBoolean, positiveInteger, requiredString, stringLength, stringPattern } from "./validation";
+import { type MouserHttpClient, type QueryParameters, splitRequestOptions } from "./http";
+import type {
+  JsonResponse,
+  LooseMouserObject,
+  MouserRequestOptions,
+  MouserResponseBody,
+} from "./types";
+import {
+  oneOf,
+  optionalBoolean,
+  positiveInteger,
+  requiredString,
+  stringLength,
+  stringPattern,
+} from "./validation";
 
 export type CartSchemas = components["schemas"];
 export type CartOperations = Pick<
@@ -48,7 +60,7 @@ const PACKAGING_CHOICES = ["None", "Cut_Tape", "MouseReel", "FullReel"] as const
 const CART_XML_ARRAY_ITEM_NAMES = {
   CartItems: "CartItemRequest",
   ScheduleCartItems: "ScheduleReleaseRequest",
-  ScheduledReleases: "KeyValuePairOfStringAndInt32"
+  ScheduledReleases: "KeyValuePairOfStringAndInt32",
 } as const;
 
 export class CartClient {
@@ -56,7 +68,7 @@ export class CartClient {
 
   getCart<TOptions extends GetCartOptions | undefined = undefined>(
     cartKey: string,
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, CartResponse>> {
     requiredString(cartKey, "cartKey");
     stringLength(cartKey, "cartKey", { max: 36 });
@@ -67,15 +79,15 @@ export class CartClient {
       path: CART_BASE_PATH,
       query: {
         ...query,
-        cartKey
+        cartKey,
       } as QueryParameters,
-      requestOptions
+      requestOptions,
     });
   }
 
   updateCart<TOptions extends UpdateCartOptions | undefined = undefined>(
     request: CartItemRequestRoot,
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, CartResponse>> {
     validateCartItemRequestRoot(request);
     const [requestOptions, query] = splitRequestOptions(options);
@@ -87,13 +99,13 @@ export class CartClient {
       body: request,
       xmlRootName: "CartItemRequestRoot",
       xmlArrayItemNames: CART_XML_ARRAY_ITEM_NAMES,
-      requestOptions
+      requestOptions,
     });
   }
 
   addCartItems<TOptions extends AddCartItemsOptions | undefined = undefined>(
     request: CartItemRequestRoot,
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, CartResponse>> {
     validateCartItemRequestRoot(request);
     const [requestOptions, query] = splitRequestOptions(options);
@@ -105,13 +117,13 @@ export class CartClient {
       body: request,
       xmlRootName: "CartItemRequestRoot",
       xmlArrayItemNames: CART_XML_ARRAY_ITEM_NAMES,
-      requestOptions
+      requestOptions,
     });
   }
 
   updateCartItems<TOptions extends UpdateCartItemsOptions | undefined = undefined>(
     request: CartItemRequestRoot,
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, CartResponse>> {
     validateCartItemRequestRoot(request);
     const [requestOptions, query] = splitRequestOptions(options);
@@ -123,14 +135,14 @@ export class CartClient {
       body: request,
       xmlRootName: "CartItemRequestRoot",
       xmlArrayItemNames: CART_XML_ARRAY_ITEM_NAMES,
-      requestOptions
+      requestOptions,
     });
   }
 
   removeCartItem<TOptions extends RemoveCartItemOptions | undefined = undefined>(
     cartKey: string,
     mouserPartNumber: string,
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, CartResponse>> {
     requiredString(cartKey, "cartKey");
     stringLength(cartKey, "cartKey", { max: 36 });
@@ -144,15 +156,15 @@ export class CartClient {
       query: {
         ...query,
         cartKey,
-        mouserPartNumber
+        mouserPartNumber,
       } as QueryParameters,
-      requestOptions
+      requestOptions,
     });
   }
 
   insertScheduleCartItems<TOptions extends ScheduleCartItemsOptions | undefined = undefined>(
     request: ScheduleCartItemsRequestRoot,
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, CartResponse>> {
     validateScheduleCartItemsRequestRoot(request);
 
@@ -162,13 +174,13 @@ export class CartClient {
       body: request,
       xmlRootName: "ScheduleCartItemsRequestRoot",
       xmlArrayItemNames: CART_XML_ARRAY_ITEM_NAMES,
-      requestOptions: options
+      requestOptions: options,
     });
   }
 
   updateScheduleCartItems<TOptions extends ScheduleCartItemsOptions | undefined = undefined>(
     request: ScheduleCartItemsRequestRoot,
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, CartResponse>> {
     validateScheduleCartItemsRequestRoot(request);
 
@@ -178,14 +190,13 @@ export class CartClient {
       body: request,
       xmlRootName: "ScheduleCartItemsRequestRoot",
       xmlArrayItemNames: CART_XML_ARRAY_ITEM_NAMES,
-      requestOptions: options
+      requestOptions: options,
     });
   }
 
-  deleteAllScheduleCartItems<TOptions extends DeleteAllScheduleCartItemsOptions | undefined = undefined>(
-    cartKey: string,
-    options?: TOptions
-  ): Promise<MouserResponseBody<TOptions, CartResponse>> {
+  deleteAllScheduleCartItems<
+    TOptions extends DeleteAllScheduleCartItemsOptions | undefined = undefined,
+  >(cartKey: string, options?: TOptions): Promise<MouserResponseBody<TOptions, CartResponse>> {
     requiredString(cartKey, "cartKey");
     stringLength(cartKey, "cartKey", { max: 36 });
 
@@ -193,15 +204,15 @@ export class CartClient {
       method: "POST",
       path: `${CART_BASE_PATH}/deleteall/schedule`,
       query: {
-        cartKey
+        cartKey,
       },
-      requestOptions: options
+      requestOptions: options,
     });
   }
 
   createCartFromOrder<TOptions extends CreateCartFromOrderOptions | undefined = undefined>(
     orderNumber: number,
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, CreateCartFromOrderResponse>> {
     positiveInteger(orderNumber, "orderNumber");
     const [requestOptions, query] = splitRequestOptions(options);
@@ -211,9 +222,9 @@ export class CartClient {
       path: `${ORDER_BASE_PATH}/item/CreateCartFromOrder`,
       query: {
         ...query,
-        orderNumber
+        orderNumber,
       } as QueryParameters,
-      requestOptions
+      requestOptions,
     });
   }
 }
@@ -251,7 +262,9 @@ function validateScheduleCartItemsRequestRoot(request: ScheduleCartItemsRequestR
 
   for (const [index, item] of request.ScheduleCartItems.entries()) {
     requiredString(item.MouserPartNumber, `ScheduleCartItems[${index}].MouserPartNumber`);
-    stringLength(item.MouserPartNumber, `ScheduleCartItems[${index}].MouserPartNumber`, { max: 80 });
+    stringLength(item.MouserPartNumber, `ScheduleCartItems[${index}].MouserPartNumber`, {
+      max: 80,
+    });
   }
 
   stringLength(request.CartKey, "CartKey", { max: 36 });

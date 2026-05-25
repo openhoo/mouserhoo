@@ -1,19 +1,5 @@
-export { MouserApiKeyAuth } from "./auth";
-export { CartClient } from "./cart";
-export { MouserClient } from "./client";
-export { MouserApiError, MouserConfigurationError, MouserNetworkError } from "./errors";
-export { OrderClient } from "./order";
-export { OrderHistoryClient } from "./order-history";
-export { ProductSearchClient } from "./product-search";
-export {
-  MOUSER_SEARCH_REQUESTS_PER_DAY,
-  MOUSER_SEARCH_REQUESTS_PER_MINUTE,
-  MouserSearchRateLimiter,
-  resolveSearchRateLimiter
-} from "./rate-limit";
-export { parseRateLimitHeaders } from "./response-metadata";
-
 export type { MouserApiKeyAuthOptions } from "./auth";
+export { MouserApiKeyAuth } from "./auth";
 export type {
   AddCartItemsOptions,
   CartCountryCurrencyOptions,
@@ -32,10 +18,13 @@ export type {
   ScheduleCartItemsRequestRoot,
   ScheduleReleaseRequest,
   UpdateCartItemsOptions,
-  UpdateCartOptions
+  UpdateCartOptions,
 } from "./cart";
+export { CartClient } from "./cart";
 export type { MouserClientOptions } from "./client";
+export { MouserClient } from "./client";
 export type { MouserApiErrorOptions, MouserNetworkErrorOptions } from "./errors";
+export { MouserApiError, MouserConfigurationError, MouserNetworkError } from "./errors";
 export type {
   CreateOrderFromOrderOptions,
   CreateOrderFromOrderResponse,
@@ -53,15 +42,17 @@ export type {
   OrderPaymentRequest,
   OrderRequest,
   OrderRequestRoot,
-  OrderSchemas
+  OrderSchemas,
 } from "./order";
+export { OrderClient } from "./order";
 export type {
   OrderHistoryDateFilter,
   OrderHistoryDetailResponse,
   OrderHistoryOperations,
   OrderHistoryResponse,
-  OrderHistorySchemas
+  OrderHistorySchemas,
 } from "./order-history";
+export { OrderHistoryClient } from "./order-history";
 export type {
   ErrorEntity,
   KeywordAndManufacturerSearchRequest,
@@ -90,14 +81,23 @@ export type {
   SearchV1Operations,
   SearchV1Schemas,
   SearchV2Operations,
-  SearchV2Schemas
+  SearchV2Schemas,
 } from "./product-search";
+export { ProductSearchClient } from "./product-search";
 export type {
   MouserSearchRateLimiterInput,
   MouserSearchRateLimitOptions,
   SearchRateLimiter,
-  SearchRateLimitWaitOptions
+  SearchRateLimitWaitOptions,
 } from "./rate-limit";
+export {
+  MOUSER_SEARCH_REQUESTS_PER_DAY,
+  MOUSER_SEARCH_REQUESTS_PER_MINUTE,
+  MouserSearchRateLimiter,
+  resolveSearchRateLimiter,
+} from "./rate-limit";
+export type { MouserRateLimit, MouserResponseMetadata } from "./response-metadata";
+export { parseRateLimitHeaders } from "./response-metadata";
 export type {
   ApiKeyProvider,
   ApiKeyRequestContext,
@@ -112,6 +112,5 @@ export type {
   MouserResponseType,
   MouserRetryOptions,
   OperationRequestBody,
-  ResponseHook
+  ResponseHook,
 } from "./types";
-export type { MouserRateLimit, MouserResponseMetadata } from "./response-metadata";

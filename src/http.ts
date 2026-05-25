@@ -1,6 +1,11 @@
 import { assertApiKey, MouserApiKeyAuth } from "./auth";
 import { MOUSER_API_BASE_URL } from "./constants";
-import { apiErrorMessage, MouserApiError, MouserConfigurationError, MouserNetworkError } from "./errors";
+import {
+  apiErrorMessage,
+  MouserApiError,
+  MouserConfigurationError,
+  MouserNetworkError,
+} from "./errors";
 import { responseMetadata } from "./response-metadata";
 import { resolveRequestSignal } from "./signal";
 import type {
@@ -11,7 +16,7 @@ import type {
   MouserResponseContentType,
   MouserResponseType,
   MouserRetryOptions,
-  ResponseHook
+  ResponseHook,
 } from "./types";
 
 export type QueryValue = string | number | boolean | null | undefined;
@@ -79,35 +84,44 @@ export class MouserHttpClient {
 
       if (!shouldRetry(result.response, retry, attempt)) {
         throw new MouserApiError({
-          message: apiErrorMessage(result.response.status, result.response.statusText, result.parsed),
+          message: apiErrorMessage(
+            result.response.status,
+            result.response.statusText,
+            result.parsed,
+          ),
           status: result.response.status,
           statusText: result.response.statusText,
           url: result.url.toString(),
           method: options.method,
           details: result.parsed,
-          headers: result.response.headers
+          headers: result.response.headers,
         });
       }
 
       try {
-        await sleep(retryDelayMs(result.response.headers, retry, attempt), options.requestOptions?.signal);
+        await sleep(
+          retryDelayMs(result.response.headers, retry, attempt),
+          options.requestOptions?.signal,
+        );
       } catch (cause) {
         throw new MouserNetworkError({
           url: result.url.toString(),
           method: options.method,
-          cause
+          cause,
         });
       }
       attempt += 1;
     }
   }
 
-  private async send(options: HttpRequestOptions): Promise<{ url: URL; response: Response; parsed: unknown }> {
+  private async send(
+    options: HttpRequestOptions,
+  ): Promise<{ url: URL; response: Response; parsed: unknown }> {
     const url = await this.buildUrl(options);
     const headers = this.buildHeaders(options);
     const resolvedSignal = resolveRequestSignal({
       signal: options.requestOptions?.signal,
-      timeoutMs: options.requestOptions?.timeoutMs ?? this.timeoutMs
+      timeoutMs: options.requestOptions?.timeoutMs ?? this.timeoutMs,
     });
 
     let response: Response;
@@ -118,14 +132,17 @@ export class MouserHttpClient {
         method: options.method,
         headers,
         body: this.serializeBody(options, headers),
-        signal: resolvedSignal.signal
+        signal: resolvedSignal.signal,
       });
-      parsed = await parseResponseBody(response, options.requestOptions?.responseType ?? this.responseType);
+      parsed = await parseResponseBody(
+        response,
+        options.requestOptions?.responseType ?? this.responseType,
+      );
     } catch (cause) {
       throw new MouserNetworkError({
         url: url.toString(),
         method: options.method,
-        cause
+        cause,
       });
     } finally {
       resolvedSignal.cleanup();
@@ -135,8 +152,8 @@ export class MouserHttpClient {
       responseMetadata({
         url,
         method: options.method,
-        response
-      })
+        response,
+      }),
     );
 
     return { url, response, parsed };
@@ -153,7 +170,7 @@ export class MouserHttpClient {
 
     const apiKey = await this.apiKeyProvider.getApiKey({
       signal: options.requestOptions?.signal,
-      timeoutMs: options.requestOptions?.timeoutMs ?? this.timeoutMs
+      timeoutMs: options.requestOptions?.timeoutMs ?? this.timeoutMs,
     });
     assertApiKey(apiKey);
     url.searchParams.set("apiKey", apiKey);
@@ -195,7 +212,7 @@ export class MouserHttpClient {
     if (contentType === "application/xml" || contentType === "text/xml") {
       return xmlEncode(options.body, {
         rootName: options.xmlRootName,
-        arrayItemNames: options.xmlArrayItemNames
+        arrayItemNames: options.xmlArrayItemNames,
       });
     }
 
@@ -204,13 +221,14 @@ export class MouserHttpClient {
 }
 
 export function splitRequestOptions<T extends MouserRequestOptions>(
-  options: T | undefined
+  options: T | undefined,
 ): [MouserRequestOptions | undefined, Omit<T, keyof MouserRequestOptions>] {
   if (!options) {
     return [undefined, {} as Omit<T, keyof MouserRequestOptions>];
   }
 
-  const { signal, timeoutMs, headers, retry, contentType, accept, responseType, ...query } = options;
+  const { signal, timeoutMs, headers, retry, contentType, accept, responseType, ...query } =
+    options;
   return [
     {
       signal,
@@ -219,9 +237,9 @@ export function splitRequestOptions<T extends MouserRequestOptions>(
       retry,
       contentType,
       accept,
-      responseType
+      responseType,
     },
-    query as Omit<T, keyof MouserRequestOptions>
+    query as Omit<T, keyof MouserRequestOptions>,
   ];
 }
 
@@ -240,7 +258,7 @@ function resolveApiKeyProvider(options: MouserHttpClientOptions): ApiKeyProvider
 function appendQueryParameter(
   searchParams: URLSearchParams,
   key: string,
-  value: QueryValue | readonly QueryValue[]
+  value: QueryValue | readonly QueryValue[],
 ): void {
   if (Array.isArray(value)) {
     for (const item of value) {
@@ -256,7 +274,10 @@ function appendQueryParameter(
   searchParams.append(key, String(value));
 }
 
-async function parseResponseBody(response: Response, responseType: MouserResponseType): Promise<unknown> {
+async function parseResponseBody(
+  response: Response,
+  responseType: MouserResponseType,
+): Promise<unknown> {
   const text = await response.text();
 
   if (!text) {
@@ -294,7 +315,9 @@ function appendFormFields(params: URLSearchParams, prefix: string, value: unknow
   }
 
   if (Array.isArray(value)) {
-    value.forEach((item, index) => appendFormFields(params, `${prefix}[${index}]`, item));
+    value.forEach((item, index) => {
+      appendFormFields(params, `${prefix}[${index}]`, item);
+    });
     return;
   }
 
@@ -326,7 +349,11 @@ function xmlEncode(value: unknown, options: XmlEncodeOptions): string {
   return serializeXmlElement(options.rootName, value, options.arrayItemNames ?? {});
 }
 
-function serializeXmlElement(name: string, value: unknown, arrayItemNames: Record<string, string>): string {
+function serializeXmlElement(
+  name: string,
+  value: unknown,
+  arrayItemNames: Record<string, string>,
+): string {
   if (value === undefined || value === null) {
     return `<${name} />`;
   }
@@ -374,7 +401,9 @@ interface ResolvedRetryOptions {
 
 const DEFAULT_RETRY_STATUSES = [429, 500, 502, 503, 504] as const;
 
-function resolveRetryOptions(options: MouserRetryOptions | false | undefined): ResolvedRetryOptions | undefined {
+function resolveRetryOptions(
+  options: MouserRetryOptions | false | undefined,
+): ResolvedRetryOptions | undefined {
   if (!options) {
     return undefined;
   }
@@ -383,7 +412,7 @@ function resolveRetryOptions(options: MouserRetryOptions | false | undefined): R
     retries: options.retries ?? 2,
     retryOnStatuses: options.retryOnStatuses ?? DEFAULT_RETRY_STATUSES,
     baseDelayMs: options.baseDelayMs ?? 250,
-    maxDelayMs: options.maxDelayMs ?? 30_000
+    maxDelayMs: options.maxDelayMs ?? 30_000,
   };
 
   if (!Number.isInteger(retry.retries) || retry.retries < 0) {
@@ -401,8 +430,16 @@ function resolveRetryOptions(options: MouserRetryOptions | false | undefined): R
   return retry;
 }
 
-function shouldRetry(response: Response, retry: ResolvedRetryOptions | undefined, attempt: number): retry is ResolvedRetryOptions {
-  return retry !== undefined && attempt < retry.retries && retry.retryOnStatuses.includes(response.status);
+function shouldRetry(
+  response: Response,
+  retry: ResolvedRetryOptions | undefined,
+  attempt: number,
+): retry is ResolvedRetryOptions {
+  return (
+    retry !== undefined &&
+    attempt < retry.retries &&
+    retry.retryOnStatuses.includes(response.status)
+  );
 }
 
 function retryDelayMs(headers: Headers, retry: ResolvedRetryOptions, attempt: number): number {
@@ -434,7 +471,9 @@ function sleep(delayMs: number, signal?: AbortSignal): Promise<void> {
   }
 
   if (signal?.aborted) {
-    return Promise.reject(signal.reason ?? new DOMException("Mouser retry wait was aborted.", "AbortError"));
+    return Promise.reject(
+      signal.reason ?? new DOMException("Mouser retry wait was aborted.", "AbortError"),
+    );
   }
 
   return new Promise((resolve, reject) => {

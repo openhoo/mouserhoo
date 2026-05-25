@@ -1,6 +1,6 @@
 import { ORDER_BASE_PATH } from "./constants";
-import { splitRequestOptions, type MouserHttpClient, type QueryParameters } from "./http";
 import type { components, operations } from "./generated/mouser-v1";
+import { type MouserHttpClient, type QueryParameters, splitRequestOptions } from "./http";
 import type { JsonResponse, MouserRequestOptions, MouserResponseBody } from "./types";
 import {
   oneOf,
@@ -9,7 +9,7 @@ import {
   positiveInteger,
   requiredString,
   stringLength,
-  stringPattern
+  stringPattern,
 } from "./validation";
 
 export type OrderSchemas = components["schemas"];
@@ -74,7 +74,7 @@ export class OrderClient {
 
   optionsQuery<TOptions extends MouserRequestOptions | undefined = undefined>(
     request: OrderInitializeRequestRoot = {},
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, OrderOptionsQueryResponse>> {
     validateOrderInitializeRequestRoot(request);
 
@@ -83,12 +83,12 @@ export class OrderClient {
       path: `${ORDER_BASE_PATH}/options/query`,
       body: request,
       xmlRootName: "OrderInializeRequestRoot",
-      requestOptions: options
+      requestOptions: options,
     });
   }
 
   getCurrencies<TOptions extends GetCurrenciesOptions | undefined = undefined>(
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, OrderCurrenciesResponse>> {
     const [requestOptions, query] = splitRequestOptions(options);
 
@@ -96,12 +96,12 @@ export class OrderClient {
       method: "GET",
       path: `${ORDER_BASE_PATH}/currencies`,
       query: query as QueryParameters,
-      requestOptions
+      requestOptions,
     });
   }
 
   getCountries<TOptions extends GetCountriesOptions | undefined = undefined>(
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, OrderCountriesResponse>> {
     const [requestOptions, query] = splitRequestOptions(options);
 
@@ -109,13 +109,13 @@ export class OrderClient {
       method: "GET",
       path: `${ORDER_BASE_PATH}/countries`,
       query: query as QueryParameters,
-      requestOptions
+      requestOptions,
     });
   }
 
   createOrder<TOptions extends MouserRequestOptions | undefined = undefined>(
     request: OrderRequestRoot,
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, CreateOrderResponse>> {
     validateOrderRequestRoot(request);
 
@@ -124,14 +124,14 @@ export class OrderClient {
       path: ORDER_BASE_PATH,
       body: request,
       xmlRootName: "OrderRequestRootType",
-      requestOptions: options
+      requestOptions: options,
     });
   }
 
   createFromOrder<TOptions extends CreateOrderFromOrderOptions | undefined = undefined>(
     orderNumber: number,
     request: OrderRequestRoot,
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, CreateOrderFromOrderResponse>> {
     positiveInteger(orderNumber, "orderNumber");
     validateOrderRequestRoot(request);
@@ -142,24 +142,24 @@ export class OrderClient {
       path: `${ORDER_BASE_PATH}/CreateFromOrder`,
       query: {
         ...query,
-        orderNumber
+        orderNumber,
       } as QueryParameters,
       body: request,
       xmlRootName: "OrderRequestRootType",
-      requestOptions
+      requestOptions,
     });
   }
 
   getOrder<TOptions extends MouserRequestOptions | undefined = undefined>(
     orderNumber: number,
-    options?: TOptions
+    options?: TOptions,
   ): Promise<MouserResponseBody<TOptions, GetOrderResponse>> {
     positiveInteger(orderNumber, "orderNumber");
 
     return this.http.request<MouserResponseBody<TOptions, GetOrderResponse>>({
       method: "GET",
       path: `${ORDER_BASE_PATH}/${orderNumber}`,
-      requestOptions: options
+      requestOptions: options,
     });
   }
 }
@@ -201,7 +201,10 @@ function validateOrderInitializeRequestRoot(request: OrderInitializeRequestRoot)
   stringLength(request.OrderInitialize.CurrencyCode, "OrderInitialize.CurrencyCode", { max: 3 });
 
   if (request.OrderInitialize.ShippingAddress) {
-    validateOrderAddress(request.OrderInitialize.ShippingAddress, "OrderInitialize.ShippingAddress");
+    validateOrderAddress(
+      request.OrderInitialize.ShippingAddress,
+      "OrderInitialize.ShippingAddress",
+    );
   }
 }
 
@@ -232,7 +235,10 @@ function validateOrderAddress(address: OrderAddressRequest, name: string): void 
   stringLength(address.EmailAddress, `${name}.EmailAddress`, { max: 50 });
 }
 
-function validateShippingMethod(method: OrderSchemas["ShippingMethod"] | undefined, name: string): void {
+function validateShippingMethod(
+  method: OrderSchemas["ShippingMethod"] | undefined,
+  name: string,
+): void {
   if (!method) {
     return;
   }
@@ -240,7 +246,10 @@ function validateShippingMethod(method: OrderSchemas["ShippingMethod"] | undefin
   optionalInteger(method.Code, `${name}.Code`);
 }
 
-function validateFreightAccount(account: OrderSchemas["FreightAccount"] | undefined, name: string): void {
+function validateFreightAccount(
+  account: OrderSchemas["FreightAccount"] | undefined,
+  name: string,
+): void {
   if (!account) {
     return;
   }

@@ -21,7 +21,11 @@ export interface MouserSearchRateLimitOptions {
   sleep?: (delayMs: number, signal?: AbortSignal) => Promise<void>;
 }
 
-export type MouserSearchRateLimiterInput = SearchRateLimiter | MouserSearchRateLimitOptions | false | undefined;
+export type MouserSearchRateLimiterInput =
+  | SearchRateLimiter
+  | MouserSearchRateLimitOptions
+  | false
+  | undefined;
 
 export class MouserSearchRateLimiter implements SearchRateLimiter {
   private readonly requestsPerMinute: number;
@@ -56,7 +60,10 @@ export class MouserSearchRateLimiter implements SearchRateLimiter {
       const now = this.now();
       this.refreshWindows(now);
 
-      if (this.minuteRequestCount < this.requestsPerMinute && this.dayRequestCount < this.requestsPerDay) {
+      if (
+        this.minuteRequestCount < this.requestsPerMinute &&
+        this.dayRequestCount < this.requestsPerDay
+      ) {
         this.minuteRequestCount += 1;
         this.dayRequestCount += 1;
         return;
@@ -94,7 +101,10 @@ export class MouserSearchRateLimiter implements SearchRateLimiter {
   private nextWindowDelay(now: number): number {
     const delays: number[] = [];
 
-    if (this.minuteRequestCount >= this.requestsPerMinute && this.minuteWindowStartedAt !== undefined) {
+    if (
+      this.minuteRequestCount >= this.requestsPerMinute &&
+      this.minuteWindowStartedAt !== undefined
+    ) {
       delays.push(this.minuteWindowStartedAt + MINUTE_MS - now);
     }
 
@@ -110,7 +120,9 @@ export class MouserSearchRateLimiter implements SearchRateLimiter {
   }
 }
 
-export function resolveSearchRateLimiter(input: MouserSearchRateLimiterInput): SearchRateLimiter | undefined {
+export function resolveSearchRateLimiter(
+  input: MouserSearchRateLimiterInput,
+): SearchRateLimiter | undefined {
   if (!input) {
     return undefined;
   }
@@ -122,7 +134,9 @@ export function resolveSearchRateLimiter(input: MouserSearchRateLimiterInput): S
   return new MouserSearchRateLimiter(input);
 }
 
-function isSearchRateLimiter(value: SearchRateLimiter | MouserSearchRateLimitOptions): value is SearchRateLimiter {
+function isSearchRateLimiter(
+  value: SearchRateLimiter | MouserSearchRateLimitOptions,
+): value is SearchRateLimiter {
   return typeof (value as SearchRateLimiter).waitForAvailableRequest === "function";
 }
 
@@ -134,7 +148,9 @@ function assertPositiveInteger(value: number, name: string): void {
 
 function assertNotAborted(signal: AbortSignal | undefined): void {
   if (signal?.aborted) {
-    throw signal.reason ?? new DOMException("Mouser search rate-limit wait was aborted.", "AbortError");
+    throw (
+      signal.reason ?? new DOMException("Mouser search rate-limit wait was aborted.", "AbortError")
+    );
   }
 }
 
@@ -152,7 +168,10 @@ function sleep(delayMs: number, signal?: AbortSignal): Promise<void> {
     function abort(): void {
       clearTimeout(timeout);
       signal?.removeEventListener("abort", abort);
-      reject(signal?.reason ?? new DOMException("Mouser search rate-limit wait was aborted.", "AbortError"));
+      reject(
+        signal?.reason ??
+          new DOMException("Mouser search rate-limit wait was aborted.", "AbortError"),
+      );
     }
 
     signal?.addEventListener("abort", abort, { once: true });
