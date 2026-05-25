@@ -1,5 +1,7 @@
 # mouserhoo
 
+[![npm version](https://img.shields.io/npm/v/%40openhoo%2Fmouserhoo?label=npm)](https://www.npmjs.com/package/@openhoo/mouserhoo)
+
 TypeScript SDK for Mouser API authentication, Search, Cart, Order, and Order History endpoints.
 
 This package is built against Mouser's official documentation:
@@ -263,3 +265,15 @@ npm run verify
 ```
 
 `npm run generate:types` refreshes generated TypeScript schema types from Mouser's official Swagger V1 and V2 JSON documents.
+
+## Credits
+
+This SDK is built from Mouser's public API documentation and Swagger definitions. Mouser product names, API names, and documentation are owned by Mouser Electronics and their respective owners.
+
+The generated TypeScript schema types are produced with `openapi-typescript` after converting Mouser's Swagger definitions with `swagger2openapi`.
+
+This project is not affiliated with, endorsed by, or sponsored by Mouser Electronics.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
