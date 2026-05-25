@@ -347,6 +347,9 @@ describe("ProductSearchClient", () => {
     expect(() =>
       client.productSearch.keywordSearch({ keyword: "x", searchOptions: "LeadFree" as never })
     ).toThrow("searchOptions must be one of");
+    expect(() => client.productSearch.keywordSearch({ keyword: "x", startingRecord: -1 })).toThrow(
+      "startingRecord must be a non-negative integer."
+    );
     expect(() => client.productSearch.keywordAndManufacturerSearch({ keyword: "x", pageNumber: 0 })).toThrow(
       "pageNumber must be a positive integer."
     );

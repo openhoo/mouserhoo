@@ -33,20 +33,22 @@
     "build": "tsup src/index.ts --format esm,cjs --dts --sourcemap --clean",
     "generate:types": "mkdir -p src/generated && swagger2openapi --outfile /tmp/mouser-v1-openapi.json https://api.mouser.com/api/docs/V1 && openapi-typescript /tmp/mouser-v1-openapi.json --output src/generated/mouser-v1.ts && swagger2openapi --outfile /tmp/mouser-v2-openapi.json https://api.mouser.com/api/docs/V2 && openapi-typescript /tmp/mouser-v2-openapi.json --output src/generated/mouser-v2.ts",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
-    "check": "npm run typecheck && npm test && npm run build",
+    "check": "npm run typecheck && npm run test:coverage && npm run build",
     "hooks:install": "if git rev-parse --git-dir >/dev/null 2>&1; then git config core.hooksPath .githooks; fi",
     "prepare": "npm run hooks:install",
     "prepack": "npm run build",
-    "verify": "npm run generate:types && npm run typecheck && npm test && npm run build"
+    "verify": "npm run generate:types && npm run typecheck && npm run test:coverage && npm run build"
   },
   "devDependencies": {
     "@openhoo/hooversion": "0.1.1",
     "@types/node": "^24.0.0",
+    "@vitest/coverage-v8": "^3.2.4",
     "openapi-typescript": "^7.13.0",
     "swagger2openapi": "^7.0.8",
     "tsup": "^8.5.0",
     "typescript": "^5.9.0",
-    "vitest": "^3.2.0"
+    "vitest": "^3.2.4"
   }
 }

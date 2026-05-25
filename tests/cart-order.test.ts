@@ -280,6 +280,15 @@ describe("OrderClient", () => {
         Order: {
           CartKey: "cart-key",
           CurrencyCode: "USD",
+          PrimaryShipping: { Code: 1.5 }
+        }
+      })
+    ).toThrow("Order.PrimaryShipping.Code must be an integer.");
+    expect(() =>
+      client.order.createOrder({
+        Order: {
+          CartKey: "cart-key",
+          CurrencyCode: "USD",
           ShippingAddress: {
             CountryCode: "USA",
             FirstName: "Ada",
