@@ -36,17 +36,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Set up Node
-        uses: actions/setup-node@v6
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: "24.x"
-          cache: npm
+          bun-version: 1.3.14
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install --frozen-lockfile
 
       - name: Run checks
-        run: npm run check
+        run: bun run check
 
   release:
     name: Release
@@ -64,11 +63,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Node
-        uses: actions/setup-node@v6
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          node-version: "24.x"
-          cache: npm
+          bun-version: 1.3.14
 
       - name: Release
         id: release
@@ -77,8 +75,10 @@ jobs:
           version: ${{ env.HOOVERSION_VERSION }}
           bun-version: 1.3.14
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          install-command: npm ci
+          install-command: bun install --frozen-lockfile
 
+      # npm trusted publishing/provenance currently requires npm publish;
+      # dependency installation and project scripts stay on Bun.
       - name: Set up Node for npm
         if: steps.release.outputs.published == 'true'
         uses: actions/setup-node@v6
@@ -87,10 +87,6 @@ jobs:
           registry-url: "https://registry.npmjs.org"
           package-manager-cache: false
 
-      - name: Set up latest npm
-        if: steps.release.outputs.published == 'true'
-        run: npm install -g npm@latest
-
       - name: Check published package version
         if: steps.release.outputs.published == 'true'
         id: package
@@ -98,7 +94,7 @@ jobs:
           PACKAGE_VERSION: ${{ steps.release.outputs.version }}
         run: |
           set -euo pipefail
-          if npm view "@openhoo/mouserhoo@${PACKAGE_VERSION}" version --registry=https://registry.npmjs.org >/dev/null 2>&1; then
+          if bun info "@openhoo/mouserhoo@${PACKAGE_VERSION}" version --registry=https://registry.npmjs.org >/dev/null 2>&1; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"

@@ -12,7 +12,7 @@ export default {
     },
   ],
   hooks: {
-    afterVersion: ["npm install --package-lock-only --ignore-scripts"],
+    afterVersion: ["bun install --lockfile-only --ignore-scripts"],
   },
   github: {
     releases: true,

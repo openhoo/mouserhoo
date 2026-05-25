@@ -21,7 +21,7 @@ The SDK uses Mouser's documented API-key authentication. Generated TypeScript sc
 ## Install
 
 ```sh
-npm install mouserhoo
+bun add @openhoo/mouserhoo
 ```
 
 ## API key authentication
@@ -260,16 +260,16 @@ await client.orderHistory.webOrderNumber(123456);
 ## Development
 
 ```sh
-npm install
-npm run generate:types
-npm run verify
+bun install
+bun run generate:types
+bun run verify
 ```
 
-`npm install` configures the tracked Git commit hook that validates commit messages with hooversion before Git accepts them.
+`bun install` configures the tracked Git commit hook that validates commit messages with hooversion before Git accepts them.
 
-`npm run check` runs type checking, unit tests with V8 coverage thresholds, and the package build. Coverage includes runtime source files and excludes generated OpenAPI types, type-only modules, and barrel exports.
+`bun run check` runs type checking, unit tests with V8 coverage thresholds, and the package build. Coverage includes runtime source files and excludes generated OpenAPI types, type-only modules, and barrel exports.
 
-`npm run generate:types` refreshes generated TypeScript schema types from Mouser's official Swagger V1 and V2 JSON documents.
+`bun run generate:types` refreshes generated TypeScript schema types from Mouser's official Swagger V1 and V2 JSON documents.
 
 ## Credits
 
