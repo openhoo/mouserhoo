@@ -1,0 +1,4 @@
+#!/bin/sh
+set -eu
+
+npx --no-install hooversion lint --edit "$1"

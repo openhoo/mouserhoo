@@ -35,10 +35,13 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm test && npm run build",
+    "hooks:install": "if git rev-parse --git-dir >/dev/null 2>&1; then git config core.hooksPath .githooks; fi",
+    "prepare": "npm run hooks:install",
     "prepack": "npm run build",
     "verify": "npm run generate:types && npm run typecheck && npm test && npm run build"
   },
   "devDependencies": {
+    "@openhoo/hooversion": "0.1.1",
     "@types/node": "^24.0.0",
     "openapi-typescript": "^7.13.0",
     "swagger2openapi": "^7.0.8",
