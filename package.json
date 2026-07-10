@@ -56,6 +56,6 @@
     "openapi-typescript": "^7.13.0",
     "swagger2openapi": "^7.0.8",
     "tsup": "^8.5.1",
-    "typescript": "^6.0.3"
+    "typescript": "^7.0.0"
   }
 }
